@@ -15,20 +15,34 @@ class TaskListPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final taskState = ref.watch(taskNotifierProvider);
+    final filterState = ref.watch(filterProvider);
     final taskNotifier = ref.read(taskNotifierProvider.notifier);
-    final themeMode = ref.watch(themeProvider);
+    final filterNotifier = ref.read(filterProvider.notifier);
 
-    final TextEditingController searchController = TextEditingController();
-    final BehaviorSubject<String> searchSubject = BehaviorSubject<String>();
-    List<TodoTask> filteredTasks = taskState.tasks;
+    // Apply filtering
+    final filteredTasks = taskState.when(
+      data: (tasks) {
+        var filtered = tasks;
 
-    searchSubject.debounceTime(const Duration(milliseconds: 300)).listen((query) {
-      filteredTasks = taskState.tasks;
-      if (query.isNotEmpty) {
-        filteredTasks = filteredTasks.where((task) => task.title.toLowerCase().contains(query.toLowerCase())).toList();
-      }
-      (context as Element).markNeedsBuild();
-    });
+        if (filterState.searchQuery.isNotEmpty) {
+          filtered = filtered
+              .where((task) => task.title.toLowerCase().contains(filterState.searchQuery.toLowerCase()))
+              .toList();
+        }
+
+        if (filterState.priority != null) {
+          filtered = filtered.where((task) => task.priority == filterState.priority).toList();
+        }
+
+        if (filterState.isCompleted != null) {
+          filtered = filtered.where((task) => task.isCompleted == filterState.isCompleted).toList();
+        }
+
+        return filtered..sort((a, b) => a.dueDate.compareTo(b.dueDate));
+      },
+      loading: () => [],
+      error: (_, __) => [],
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -36,18 +50,11 @@ class TaskListPage extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.undo),
-            onPressed: taskState.history.isEmpty ? null : taskNotifier.undo,
+            onPressed: taskNotifier.history.isEmpty ? null : taskNotifier.undo,
           ),
           IconButton(
             icon: const Icon(Icons.redo),
-            onPressed: taskState.redoStack.isEmpty ? null : taskNotifier.redo,
-          ),
-          IconButton(
-            icon: Icon(themeMode == ThemeMode.light ? Icons.dark_mode : Icons.light_mode),
-            onPressed: () {
-              ref.read(themeProvider.notifier).state =
-                  themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
-            },
+            onPressed: taskNotifier.redoStack.isEmpty ? null : taskNotifier.redo,
           ),
         ],
       ),
@@ -56,76 +63,51 @@ class TaskListPage extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: TextField(
-              controller: searchController,
+              onChanged: filterNotifier.updateSearchQuery,
               decoration: const InputDecoration(labelText: 'Search Tasks', border: OutlineInputBorder()),
-              onChanged: (value) => searchSubject.add(value),
             ),
           ),
-          Consumer(
-            builder: (context, ref, child) {
-              Priority? filterPriority;
-              bool? filterCompleted;
-
-              return Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  DropdownButton<Priority?>(
-                    value: filterPriority,
-                    hint: const Text('Priority'),
-                    items: [null, ...Priority.values]
-                        .map((p) => DropdownMenuItem(value: p, child: Text(p?.name ?? 'All')))
-                        .toList(),
-                    onChanged: (value) {
-                      filterPriority = value;
-                      filteredTasks = taskState.tasks;
-                      if (filterPriority != null) {
-                        filteredTasks = filteredTasks.where((task) => task.priority == filterPriority).toList();
-                      }
-                      if (filterCompleted != null) {
-                        filteredTasks = filteredTasks.where((task) => task.isCompleted == filterCompleted).toList();
-                      }
-                      filteredTasks.sort((a, b) => a.dueDate.compareTo(b.dueDate));
-                      (context as Element).markNeedsBuild();
-                    },
-                  ),
-                  DropdownButton<bool?>(
-                    value: filterCompleted,
-                    hint: const Text('Status'),
-                    items: const [
-                      DropdownMenuItem(value: null, child: Text('All')),
-                      DropdownMenuItem(value: false, child: Text('Pending')),
-                      DropdownMenuItem(value: true, child: Text('Completed')),
-                    ],
-                    onChanged: (value) {
-                      filterCompleted = value;
-                      filteredTasks = taskState.tasks;
-                      if (filterPriority != null) {
-                        filteredTasks = filteredTasks.where((task) => task.priority == filterPriority).toList();
-                      }
-                      if (filterCompleted != null) {
-                        filteredTasks = filteredTasks.where((task) => task.isCompleted == filterCompleted).toList();
-                      }
-                      filteredTasks.sort((a, b) => a.dueDate.compareTo(b.dueDate));
-                      (context as Element).markNeedsBuild();
-                    },
-                  ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              DropdownButton<Priority?>(
+                value: filterState.priority,
+                hint: const Text('Priority'),
+                items: [null, ...Priority.values]
+                    .map((p) => DropdownMenuItem(value: p, child: Text(p?.name ?? 'All')))
+                    .toList(),
+                onChanged: filterNotifier.updatePriority,
+              ),
+              DropdownButton<bool?>(
+                value: filterState.isCompleted,
+                hint: const Text('Status'),
+                items: const [
+                  DropdownMenuItem(value: null, child: Text('All')),
+                  DropdownMenuItem(value: false, child: Text('Pending')),
+                  DropdownMenuItem(value: true, child: Text('Completed')),
                 ],
-              );
-            },
+                onChanged: filterNotifier.updateIsCompleted,
+              ),
+            ],
           ),
           Expanded(
-            child: taskState.isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : ListView.builder(
-                    itemCount: filteredTasks.length,
-                    itemBuilder: (context, index) {
-                      final task = filteredTasks[index];
-                      return TaskCard(
-                        task: task,
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => TaskDetailPage(task: task))),
-                      );
-                    },
-                  ),
+            child: taskState.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (error, _) => Center(child: Text('Error: $error')),
+              data: (_) => ListView.builder(
+                itemCount: filteredTasks.length,
+                itemBuilder: (context, index) {
+                  final task = filteredTasks[index];
+                  return TaskCard(
+                    task: task,
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => TaskDetailPage(task: task)),
+                    ),
+                  );
+                },
+              ),
+            ),
           ),
         ],
       ),

@@ -15,107 +15,66 @@ class TaskAction {
   TaskAction(this.type, this.task);
 }
 
-class TaskState {
-  final List<TodoTask> tasks;
-  final bool isLoading;
-  final dartz.Option<Failure> failure;
-  final List<TaskAction> history;
-  final List<TaskAction> redoStack;
-
-  TaskState({
-    required this.tasks,
-    required this.isLoading,
-    required this.failure,
-    required this.history,
-    required this.redoStack,
-  });
-
-  TaskState copyWith({
-    List<TodoTask>? tasks,
-    bool? isLoading,
-    dartz.Option<Failure>? failure,
-    List<TaskAction>? history,
-    List<TaskAction>? redoStack,
-  }) {
-    return TaskState(
-      tasks: tasks ?? this.tasks,
-      isLoading: isLoading ?? this.isLoading,
-      failure: failure ?? this.failure,
-      history: history ?? this.history,
-      redoStack: redoStack ?? this.redoStack,
-    );
-  }
-}
-
-class TaskNotifier extends StateNotifier<TaskState> {
+class TaskNotifier extends StateNotifier<AsyncValue<List<TodoTask>>> {
   final TaskRepository repository;
+  final List<TaskAction> history = [];
+  final List<TaskAction> redoStack = [];
 
-  TaskNotifier(this.repository)
-      : super(TaskState(
-          tasks: [],
-          isLoading: false,
-          failure: dartz.none(),
-          history: [],
-          redoStack: [],
-        ));
+  TaskNotifier(this.repository) : super(const AsyncValue.loading()) {
+    loadTasks();
+  }
 
   Future<void> loadTasks() async {
-    state = state.copyWith(isLoading: true);
+    state = const AsyncValue.loading();
     final result = await repository.getTasks();
     state = result.fold(
-      (failure) => state.copyWith(isLoading: false, failure: dartz.some(failure)),
-      (tasks) => state.copyWith(tasks: tasks, isLoading: false, failure: dartz.none()),
+      (failure) => AsyncValue.error(failure, StackTrace.current),
+      AsyncValue.data,
     );
   }
 
   Future<void> createTask(TodoTask task) async {
     final result = await repository.createTask(task);
     result.fold(
-      (failure) => state = state.copyWith(failure: dartz.some(failure)),
+      (failure) => state = AsyncValue.error(failure, StackTrace.current),
       (_) {
-        state = state.copyWith(
-          tasks: [...state.tasks, task],
-          history: [...state.history, TaskAction(TaskActionType.create, task)],
-          redoStack: [],
-        );
+        state = AsyncValue.data([...state.value ?? [], task]);
+        history.add(TaskAction(TaskActionType.create, task));
+        redoStack.clear();
       },
     );
   }
 
   Future<void> updateTask(TodoTask task) async {
-    final oldTask = state.tasks.firstWhere((t) => t.id == task.id);
+    final oldTask = (state.value ?? []).firstWhere((t) => t.id == task.id);
     final result = await repository.updateTask(task);
     result.fold(
-      (failure) => state = state.copyWith(failure: dartz.some(failure)),
+      (failure) => state = AsyncValue.error(failure, StackTrace.current),
       (_) {
-        state = state.copyWith(
-          tasks: state.tasks.map((t) => t.id == task.id ? task : t).toList(),
-          history: [...state.history, TaskAction(TaskActionType.update, oldTask)],
-          redoStack: [],
-        );
+        state = AsyncValue.data((state.value ?? []).map((t) => t.id == task.id ? task : t).toList());
+        history.add(TaskAction(TaskActionType.update, oldTask));
+        redoStack.clear();
       },
     );
   }
 
   Future<void> deleteTask(String id) async {
-    final task = state.tasks.firstWhere((t) => t.id == id);
+    final task = (state.value ?? []).firstWhere((t) => t.id == id);
     final result = await repository.deleteTask(id);
     result.fold(
-      (failure) => state = state.copyWith(failure: dartz.some(failure)),
+      (failure) => state = AsyncValue.error(failure, StackTrace.current),
       (_) {
-        state = state.copyWith(
-          tasks: state.tasks.where((t) => t.id != id).toList(),
-          history: [...state.history, TaskAction(TaskActionType.delete, task)],
-          redoStack: [],
-        );
+        state = AsyncValue.data((state.value ?? []).where((t) => t.id != id).toList());
+        history.add(TaskAction(TaskActionType.delete, task));
+        redoStack.clear();
       },
     );
   }
 
   void undo() {
-    if (state.history.isEmpty) return;
-    final lastAction = state.history.last;
-    state = state.copyWith(history: state.history.sublist(0, state.history.length - 1));
+    if (history.isEmpty) return;
+    final lastAction = history.last;
+    history.removeLast();
 
     switch (lastAction.type) {
       case TaskActionType.create:
@@ -128,13 +87,13 @@ class TaskNotifier extends StateNotifier<TaskState> {
         createTask(lastAction.task);
         break;
     }
-    state = state.copyWith(redoStack: [...state.redoStack, lastAction]);
+    redoStack.add(lastAction);
   }
 
   void redo() {
-    if (state.redoStack.isEmpty) return;
-    final nextAction = state.redoStack.last;
-    state = state.copyWith(redoStack: state.redoStack.sublist(0, state.redoStack.length - 1));
+    if (redoStack.isEmpty) return;
+    final nextAction = redoStack.last;
+    redoStack.removeLast();
 
     switch (nextAction.type) {
       case TaskActionType.create:
@@ -147,6 +106,6 @@ class TaskNotifier extends StateNotifier<TaskState> {
         deleteTask(nextAction.task.id);
         break;
     }
-    state = state.copyWith(history: [...state.history, nextAction]);
+    history.add(nextAction);
   }
 }
