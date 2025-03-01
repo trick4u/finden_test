@@ -29,7 +29,13 @@ void main() async {
   const InitializationSettings initializationSettings =
       InitializationSettings(android: initializationSettingsAndroid);
   await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+   _requestPermissions();
   runApp(const ProviderScope(child: MyApp()));
+}
+
+Future<void> _requestPermissions() async {
+  final androidPlugin = flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+  await androidPlugin?.requestNotificationsPermission();
 }
 
 class MyApp extends ConsumerWidget {

@@ -1,3 +1,9 @@
+// ignore_for_file: prefer_const_constructors
+
+import 'dart:io';
+
+import 'package:android_intent_plus/android_intent.dart';
+import 'package:android_intent_plus/flag.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:dartz/dartz.dart';
@@ -20,26 +26,54 @@ class TaskRepositoryImpl implements TaskRepository {
       : firestore = FirebaseFirestore.instance,
         taskBox = Hive.box<TodoTaskDto>('tasks');
 
-  Future<void> _scheduleNotification(TodoTask task) async {
-    if (task.dueDate.isAfter(DateTime.now())) {
-      await flutterLocalNotificationsPlugin.zonedSchedule(
-        task.id.hashCode,
-        'Task Due: ${task.title}',
-        'Due on ${task.dueDate.toString().substring(0, 16)}',
-        tz.TZDateTime.from(task.dueDate, tz.local),
-        const NotificationDetails(
-          android: AndroidNotificationDetails(
-            'task_channel',
-            'Task Reminders',
-            importance: Importance.max,
-            priority: Priority.high,
-          ),
+Future<void> _scheduleNotification(TodoTask task) async {
+  if (await _needsExactAlarmPermission()) {
+    _requestExactAlarmPermission(); // 🚀 Open settings ONLY if needed
+    return; // Stop here if permission isn't granted
+  }
+
+  if (task.dueDate.isAfter(DateTime.now())) {
+    print("⏰ Scheduling notification for: ${task.title} at ${task.dueDate}");
+
+    await flutterLocalNotificationsPlugin.zonedSchedule(
+      task.id.hashCode,
+      'Task Due: ${task.title}',
+      'Due on ${task.dueDate.toString().substring(0, 16)}',
+      tz.TZDateTime.from(task.dueDate, tz.local),
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'task_channel',
+          'Task Reminders',
+          importance: Importance.max,
+          priority: Priority.high,
         ),
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
+      ),
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+    );
+  } else {
+    print("⚠️ Task ${task.title} is in the past, skipping notification.");
+  }
+}
+
+  Future<void> _requestExactAlarmPermission() async {
+    if (Platform.isAndroid && await _needsExactAlarmPermission()) {
+      print("⚠️ Exact alarm permission is missing, opening settings...");
+      const intent = AndroidIntent(
+        action: 'android.settings.REQUEST_SCHEDULE_EXACT_ALARM',
+        flags: [Flag.FLAG_ACTIVITY_NEW_TASK],
       );
+      await intent.launch();
     }
+  }
+
+// 🔥 Check if we need exact alarm permission (only for Android 12+)
+  Future<bool> _needsExactAlarmPermission() async {
+    if (Platform.isAndroid) {
+      int sdkInt = int.parse(Platform.version.split('.')[0]);
+      return sdkInt >= 31; // Android 12 (API 31) and above need this permission
+    }
+    return false;
   }
 
   Future<void> _syncWithFirestore() async {
