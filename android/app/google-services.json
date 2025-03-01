@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "786752836638",
+    "project_id": "mar-cb1f2",
+    "storage_bucket": "mar-cb1f2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:786752836638:android:0e47e6a2f8b1fab75f8a0f",
+        "android_client_info": {
+          "package_name": "com.example.finden_test"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA03E2avplZ--k4oPpfVUOqNuOiO7e80LQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:786752836638:android:1a7df1cc01e76f935f8a0f",
+        "android_client_info": {
+          "package_name": "com.example.mspertz"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA03E2avplZ--k4oPpfVUOqNuOiO7e80LQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
