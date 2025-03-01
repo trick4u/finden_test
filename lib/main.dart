@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -20,7 +21,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-   showTestNotification();
+   //showTestNotification();
    tz.initializeTimeZones();
   
   await Hive.initFlutter();
@@ -114,7 +115,18 @@ class MyApp extends ConsumerWidget {
         useMaterial3: true,
       ),
       themeMode: themeMode, // Dynamic switch
-     home: const LoginPage(),
+     home: StreamBuilder<User?>(
+        stream: FirebaseAuth.instance.authStateChanges(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasData && snapshot.data != null) {
+            return const TaskListPage(); 
+          }
+          return const LoginPage(); 
+        },
+      ),
     );
   }
 }

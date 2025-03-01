@@ -27,12 +27,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(authProvider);
-
-    if (authState.isAuthenticated) {
-      return const TaskListPage(); // Navigate to TaskListPage if authenticated
-    }
-
     return Scaffold(
       appBar: AppBar(title: const Text('Task Manager Login')),
       body: Padding(
