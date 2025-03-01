@@ -19,19 +19,17 @@ import 'package:timezone/timezone.dart' as tz;
 class TaskRepositoryImpl implements TaskRepository {
   final FirebaseFirestore firestore;
   final Box<TodoTaskDto> taskBox;
-  final String userId;
 
-  // never forget to add the constructor
-  //never done anything like this before
-  TaskRepositoryImpl() : firestore = FirebaseFirestore.instance, taskBox = Hive.box<TodoTaskDto>('tasks'),userId = FirebaseAuth.instance.currentUser!.uid;
+  TaskRepositoryImpl()
+      : firestore = FirebaseFirestore.instance,
+        taskBox = Hive.box<TodoTaskDto>('tasks');
 
-
-Future<void> _scheduleNotification(TodoTask task) async {
+  Future<void> _scheduleNotification(TodoTask task) async {
     if (task.dueDate.isAfter(DateTime.now())) {
       await flutterLocalNotificationsPlugin.zonedSchedule(
         task.id.hashCode,
-        'Task Due: ${task.title}', 
-        'Due on ${task.dueDate.toString()}', 
+        'Task Due: ${task.title}',
+        'Due on ${task.dueDate.toString()}',
         tz.TZDateTime.from(task.dueDate, tz.local),
         const NotificationDetails(
           android: AndroidNotificationDetails(
@@ -41,17 +39,16 @@ Future<void> _scheduleNotification(TodoTask task) async {
             priority: Priority.high,
           ),
         ),
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle, 
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
       );
     }
   }
 
- Future<void> _syncWithFirestore() async {
+  Future<void> _syncWithFirestore() async {
     try {
       final localTasks = taskBox.values.toList();
-      final snapshot = await firestore.collection('users').doc(userId).collection('tasks').get();
+      final snapshot = await firestore.collection('tasks').get();
       final remoteTasks = snapshot.docs.map((doc) => TodoTaskDto.fromJson(doc.data())).toList();
 
       for (var remoteTask in remoteTasks) {
@@ -67,7 +64,7 @@ Future<void> _scheduleNotification(TodoTask task) async {
 
       for (var localTask in localTasks) {
         if (!remoteTasks.any((rt) => rt.id == localTask.id)) {
-          await firestore.collection('users').doc(userId).collection('tasks').doc(localTask.id).set(localTask.toJson());
+          await firestore.collection('tasks').doc(localTask.id).set(localTask.toJson());
         }
       }
     } catch (e) {}
@@ -77,38 +74,39 @@ Future<void> _scheduleNotification(TodoTask task) async {
   Future<Either<Failure, List<TodoTask>>> getTasks() async {
     try {
       await _syncWithFirestore();
-      final snapshot = await firestore.collection('tasks').get();
-      final tasks = snapshot.docs.map((doc) => TodoTaskDto.fromJson(doc.data()).toDomain()).toList();
+      final tasks = taskBox.values.map((dto) => dto.toDomain()).toList();
       for (var task in tasks) {
         await _scheduleNotification(task);
       }
       return right(tasks);
     } catch (e) {
+      if (taskBox.isNotEmpty) return right(taskBox.values.map((dto) => dto.toDomain()).toList());
       return left(const Failure.serverError());
     }
   }
+
   @override
-Future<Either<Failure, Unit>> createTask(TodoTask task) async {
+  Future<Either<Failure, Unit>> createTask(TodoTask task) async {
     try {
       final dto = TodoTaskDto.fromDomain(task);
       await taskBox.put(dto.id, dto);
-      await firestore.collection('users').doc(userId).collection('tasks').doc(dto.id).set(dto.toJson());
+      await firestore.collection('tasks').doc(dto.id).set(dto.toJson());
       await _scheduleNotification(task);
       return right(unit);
     } catch (e) {
       final dto = TodoTaskDto.fromDomain(task);
       await taskBox.put(dto.id, dto);
       await _scheduleNotification(task);
-      return right(unit); 
+      return right(unit);
     }
   }
 
- @override
+  @override
   Future<Either<Failure, Unit>> updateTask(TodoTask task) async {
     try {
       final dto = TodoTaskDto.fromDomain(task);
       await taskBox.put(dto.id, dto);
-      await firestore.collection('users').doc(userId).collection('tasks').doc(dto.id).update(dto.toJson());
+      await firestore.collection('tasks').doc(dto.id).update(dto.toJson());
       await flutterLocalNotificationsPlugin.cancel(task.id.hashCode);
       await _scheduleNotification(task);
       return right(unit);
@@ -117,7 +115,7 @@ Future<Either<Failure, Unit>> createTask(TodoTask task) async {
       await taskBox.put(dto.id, dto);
       await flutterLocalNotificationsPlugin.cancel(task.id.hashCode);
       await _scheduleNotification(task);
-      return right(unit); // Return success even if offline
+      return right(unit);
     }
   }
 
@@ -131,7 +129,7 @@ Future<Either<Failure, Unit>> createTask(TodoTask task) async {
     } catch (e) {
       await taskBox.delete(id);
       await flutterLocalNotificationsPlugin.cancel(id.hashCode);
-      return left(const Failure.serverError());
+      return right(unit);
     }
   }
 }
