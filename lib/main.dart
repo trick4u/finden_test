@@ -7,6 +7,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'application/providers.dart';
 import 'firebase_options.dart';
 import 'infrasturcture/dtos/todo_task_dto.dart';
+import 'presentation/pages/login_page.dart';
 import 'presentation/pages/task_list_page.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
@@ -19,8 +20,9 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  tz.initializeTimeZones();
-  tz.setLocalLocation(tz.getLocation('UTC'));
+   showTestNotification();
+   tz.initializeTimeZones();
+  
   await Hive.initFlutter();
   Hive.registerAdapter(TodoTaskDtoAdapter());
   await Hive.openBox<TodoTaskDto>('tasks');
@@ -29,8 +31,50 @@ void main() async {
   const InitializationSettings initializationSettings =
       InitializationSettings(android: initializationSettingsAndroid);
   await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+   await _initializeNotifications();
    _requestPermissions();
   runApp(const ProviderScope(child: MyApp()));
+}
+
+Future<void> _initializeNotifications() async {
+  const AndroidInitializationSettings androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+
+  const InitializationSettings settings = InitializationSettings(android: androidSettings);
+
+  await flutterLocalNotificationsPlugin.initialize(settings);
+
+  // 🔥 Recreate the notification channel
+  const AndroidNotificationChannel channel = AndroidNotificationChannel(
+    'task_channel_v2',  // 🔥 Change ID to force recreation
+    'Task Reminders',
+    description: 'Channel for scheduled task reminders.',
+    importance: Importance.max,
+    playSound: true,
+    enableVibration: true,
+  );
+
+  final androidPlugin = flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+
+  await androidPlugin?.createNotificationChannel(channel);
+}
+
+Future<void> showTestNotification() async {
+  const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+    'task_channel', 
+    'Task Reminders',
+    importance: Importance.max,
+    priority: Priority.high,
+  );
+
+  const NotificationDetails notificationDetails = NotificationDetails(android: androidDetails);
+
+  await flutterLocalNotificationsPlugin.show(
+    0, // Unique ID
+    'Test Notification',
+    'This is a test notification!',
+    notificationDetails,
+  );
 }
 
 Future<void> _requestPermissions() async {
@@ -70,7 +114,7 @@ class MyApp extends ConsumerWidget {
         useMaterial3: true,
       ),
       themeMode: themeMode, // Dynamic switch
-      home: const TaskListPage(),
+     home: const LoginPage(),
     );
   }
 }

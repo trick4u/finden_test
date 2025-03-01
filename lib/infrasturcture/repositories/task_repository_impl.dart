@@ -17,32 +17,42 @@ import '../../domain/repositories/task_repository.dart';
 import '../../main.dart';
 import '../dtos/todo_task_dto.dart';
 import 'package:timezone/timezone.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
+import 'package:timezone/data/latest_all.dart' as tz;
 
 class TaskRepositoryImpl implements TaskRepository {
   final FirebaseFirestore firestore;
   final Box<TodoTaskDto> taskBox;
+  final String userId;
 
-  TaskRepositoryImpl()
+TaskRepositoryImpl()
       : firestore = FirebaseFirestore.instance,
-        taskBox = Hive.box<TodoTaskDto>('tasks');
-
+        taskBox = Hive.box<TodoTaskDto>('tasks'),
+        userId = FirebaseAuth.instance.currentUser!.uid {
+    if (userId == null) throw Exception('User not authenticated');
+  }
 Future<void> _scheduleNotification(TodoTask task) async {
+  tz.initializeTimeZones();
+  final tz.Location localTimeZone = tz.getLocation('Asia/Kolkata');
+  final scheduledTime = tz.TZDateTime.from(task.dueDate, localTimeZone);
+
+  print("🕒 Corrected scheduled time: $scheduledTime (Current time: ${tz.TZDateTime.now(localTimeZone)})");
+
   if (await _needsExactAlarmPermission()) {
-    _requestExactAlarmPermission(); // 🚀 Open settings ONLY if needed
-    return; // Stop here if permission isn't granted
+    print("⚠️ Need to request exact alarm permission before scheduling.");
+    _requestExactAlarmPermission(); // Only open settings if needed
+    return; // Stop execution here until the user grants permission
   }
 
-  if (task.dueDate.isAfter(DateTime.now())) {
-    print("⏰ Scheduling notification for: ${task.title} at ${task.dueDate}");
-
+  try {
     await flutterLocalNotificationsPlugin.zonedSchedule(
       task.id.hashCode,
-      'Task Due: ${task.title}',
-      'Due on ${task.dueDate.toString().substring(0, 16)}',
-      tz.TZDateTime.from(task.dueDate, tz.local),
+      'Task Reminder',
+      'Don\'t forget: ${task.title}!',
+      scheduledTime,
       const NotificationDetails(
         android: AndroidNotificationDetails(
-          'task_channel',
+          'task_channel_v2',
           'Task Reminders',
           importance: Importance.max,
           priority: Priority.high,
@@ -51,37 +61,38 @@ Future<void> _scheduleNotification(TodoTask task) async {
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
     );
-  } else {
-    print("⚠️ Task ${task.title} is in the past, skipping notification.");
+    print("✅ Notification scheduled successfully!");
+  } catch (e) {
+    print("❌ Failed to schedule notification: $e");
   }
 }
 
-  Future<void> _requestExactAlarmPermission() async {
-    if (Platform.isAndroid && await _needsExactAlarmPermission()) {
-      print("⚠️ Exact alarm permission is missing, opening settings...");
-      const intent = AndroidIntent(
-        action: 'android.settings.REQUEST_SCHEDULE_EXACT_ALARM',
-        flags: [Flag.FLAG_ACTIVITY_NEW_TASK],
-      );
-      await intent.launch();
-    }
+Future<void> _requestExactAlarmPermission() async {
+  if (Platform.isAndroid && await _needsExactAlarmPermission()) {
+    print("⚠️ Exact alarm permission is missing, opening settings...");
+    const intent = AndroidIntent(
+      action: 'android.settings.REQUEST_SCHEDULE_EXACT_ALARM',
+      flags: [Flag.FLAG_ACTIVITY_NEW_TASK],
+    );
+    await intent.launch();
+  } else {
+    print("✅ Exact alarm permission already granted, no need to open settings.");
   }
+}
 
 // 🔥 Check if we need exact alarm permission (only for Android 12+)
-  Future<bool> _needsExactAlarmPermission() async {
-    if (Platform.isAndroid) {
-      int sdkInt = int.parse(Platform.version.split('.')[0]);
-      return sdkInt >= 31; // Android 12 (API 31) and above need this permission
-    }
-    return false;
+Future<bool> _needsExactAlarmPermission() async {
+  if (Platform.isAndroid) {
+    int sdkInt = int.parse(Platform.version.split('.')[0]);
+    return sdkInt >= 31; // Android 12+ (API 31+) needs this permission
   }
-
-  Future<void> _syncWithFirestore() async {
+  return false;
+}
+Future<void> _syncWithFirestore() async {
     try {
       final localTasks = taskBox.values.toList();
-      final snapshot = await firestore.collection('tasks').get();
-      final remoteTasks =
-          snapshot.docs.map((doc) => TodoTaskDto.fromJson(doc.data())).toList();
+      final snapshot = await firestore.collection('users').doc(userId).collection('tasks').get();
+      final remoteTasks = snapshot.docs.map((doc) => TodoTaskDto.fromJson(doc.data())).toList();
 
       for (var remoteTask in remoteTasks) {
         if (!taskBox.containsKey(remoteTask.id)) {
@@ -96,10 +107,7 @@ Future<void> _scheduleNotification(TodoTask task) async {
 
       for (var localTask in localTasks) {
         if (!remoteTasks.any((rt) => rt.id == localTask.id)) {
-          await firestore
-              .collection('tasks')
-              .doc(localTask.id)
-              .set(localTask.toJson());
+          await firestore.collection('users').doc(userId).collection('tasks').doc(localTask.id).set(localTask.toJson());
         }
       }
     } catch (e) {}
@@ -115,8 +123,7 @@ Future<void> _scheduleNotification(TodoTask task) async {
       }
       return right(tasks);
     } catch (e) {
-      if (taskBox.isNotEmpty)
-        return right(taskBox.values.map((dto) => dto.toDomain()).toList());
+      if (taskBox.isNotEmpty) return right(taskBox.values.map((dto) => dto.toDomain()).toList());
       return left(const Failure.serverError());
     }
   }
@@ -126,7 +133,7 @@ Future<void> _scheduleNotification(TodoTask task) async {
     try {
       final dto = TodoTaskDto.fromDomain(task);
       await taskBox.put(dto.id, dto);
-      await firestore.collection('tasks').doc(dto.id).set(dto.toJson());
+      await firestore.collection('users').doc(userId).collection('tasks').doc(dto.id).set(dto.toJson());
       await _scheduleNotification(task);
       return right(unit);
     } catch (e) {
@@ -142,7 +149,7 @@ Future<void> _scheduleNotification(TodoTask task) async {
     try {
       final dto = TodoTaskDto.fromDomain(task);
       await taskBox.put(dto.id, dto);
-      await firestore.collection('tasks').doc(dto.id).update(dto.toJson());
+      await firestore.collection('users').doc(userId).collection('tasks').doc(dto.id).update(dto.toJson());
       await flutterLocalNotificationsPlugin.cancel(task.id.hashCode);
       await _scheduleNotification(task);
       return right(unit);
@@ -159,7 +166,7 @@ Future<void> _scheduleNotification(TodoTask task) async {
   Future<Either<Failure, Unit>> deleteTask(String id) async {
     try {
       await taskBox.delete(id);
-      await firestore.collection('tasks').doc(id).delete();
+      await firestore.collection('users').doc(userId).collection('tasks').doc(id).delete();
       await flutterLocalNotificationsPlugin.cancel(id.hashCode);
       return right(unit);
     } catch (e) {

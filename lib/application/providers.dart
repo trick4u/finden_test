@@ -9,10 +9,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../domain/entities/todo_task.dart';
 import '../domain/value_objects/priority.dart';
+import '../infrasturcture/repositories/auth_repository_impl.dart';
 import '../infrasturcture/repositories/task_repository_impl.dart';
+import 'auth/auth_notifier.dart';
 import 'task/task_notifier.dart';
 
 final taskRepositoryProvider = Provider<TaskRepositoryImpl>((ref) => TaskRepositoryImpl());
+final authRepositoryProvider = Provider<AuthRepositoryImpl>((ref) => AuthRepositoryImpl());
+final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
+  final repository = ref.watch(authRepositoryProvider);
+  return AuthNotifier(repository);
+});
 
 final taskNotifierProvider = StateNotifierProvider<TaskNotifier, AsyncValue<List<TodoTask>>>((ref) {
   final repository = ref.watch(taskRepositoryProvider);
