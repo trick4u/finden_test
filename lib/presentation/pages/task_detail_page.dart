@@ -18,18 +18,44 @@ class TaskDetailPage extends ConsumerStatefulWidget {
 }
 
 class _TaskDetailPageState extends ConsumerState<TaskDetailPage> {
-  late TextEditingController titleController;
-  late TextEditingController descController;
-  late DateTime dueDate;
-  late Priority priority;
+  late TextEditingController _titleController;
+  late TextEditingController _descController;
+  late DateTime _dueDate;
+  late Priority _priority;
 
   @override
   void initState() {
     super.initState();
-    titleController = TextEditingController(text: widget.task?.title ?? '');
-    descController = TextEditingController(text: widget.task?.description ?? '');
-    dueDate = widget.task?.dueDate ?? DateTime.now();
-    priority = widget.task?.priority ?? Priority.medium;
+    _titleController = TextEditingController(text: widget.task?.title ?? '');
+    _descController = TextEditingController(text: widget.task?.description ?? '');
+    _dueDate = widget.task?.dueDate ?? DateTime.now();
+    _priority = widget.task?.priority ?? Priority.medium;
+  }
+
+  Future<void> _selectDateTime(BuildContext context) async {
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: _dueDate,
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2100),
+    );
+    if (pickedDate != null) {
+      final TimeOfDay? pickedTime = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.fromDateTime(_dueDate),
+      );
+      if (pickedTime != null) {
+        setState(() {
+          _dueDate = DateTime(
+            pickedDate.year,
+            pickedDate.month,
+            pickedDate.day,
+            pickedTime.hour,
+            pickedTime.minute,
+          );
+        });
+      }
+    }
   }
 
   @override
@@ -40,33 +66,31 @@ class _TaskDetailPageState extends ConsumerState<TaskDetailPage> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            TextField(controller: titleController, decoration: const InputDecoration(labelText: 'Title')),
-            TextField(controller: descController, decoration: const InputDecoration(labelText: 'Description')),
+            TextField(
+              controller: _titleController,
+              decoration: const InputDecoration(labelText: 'Title'),
+            ),
+            TextField(
+              controller: _descController,
+              decoration: const InputDecoration(labelText: 'Description'),
+            ),
             TextButton(
-              onPressed: () async {
-                final picked = await showDatePicker(
-                  context: context,
-                  initialDate: dueDate,
-                  firstDate: DateTime.now(),
-                  lastDate: DateTime(2100),
-                );
-                if (picked != null) setState(() => dueDate = picked);
-              },
-              child: Text('Due: ${dueDate.toString().split(' ')[0]}'),
+              onPressed: () => _selectDateTime(context),
+              child: Text('Due: ${_dueDate.toString().substring(0, 16)}'), // Show date and time
             ),
             DropdownButton<Priority>(
-              value: priority,
+              value: _priority,
               items: Priority.values.map((p) => DropdownMenuItem(value: p, child: Text(p.name))).toList(),
-              onChanged: (value) => setState(() => priority = value!),
+              onChanged: (value) => setState(() => _priority = value!),
             ),
             ElevatedButton(
               onPressed: () {
                 final task = TodoTask(
                   id: widget.task?.id ?? const Uuid().v4(),
-                  title: titleController.text,
-                  description: descController.text,
-                  dueDate: dueDate,
-                  priority: priority,
+                  title: _titleController.text,
+                  description: _descController.text,
+                  dueDate: _dueDate,
+                  priority: _priority,
                   isCompleted: widget.task?.isCompleted ?? false,
                 );
                 final notifier = ref.read(taskNotifierProvider.notifier);

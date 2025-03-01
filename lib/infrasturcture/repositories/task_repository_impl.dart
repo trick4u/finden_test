@@ -1,12 +1,8 @@
-
-
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:dartz/dartz.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:hive/hive.dart';
-
 
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../domain/entities/todo_task.dart';
@@ -29,7 +25,7 @@ class TaskRepositoryImpl implements TaskRepository {
       await flutterLocalNotificationsPlugin.zonedSchedule(
         task.id.hashCode,
         'Task Due: ${task.title}',
-        'Due on ${task.dueDate.toString()}',
+        'Due on ${task.dueDate.toString().substring(0, 16)}',
         tz.TZDateTime.from(task.dueDate, tz.local),
         const NotificationDetails(
           android: AndroidNotificationDetails(
@@ -40,7 +36,8 @@ class TaskRepositoryImpl implements TaskRepository {
           ),
         ),
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
       );
     }
   }
@@ -49,7 +46,8 @@ class TaskRepositoryImpl implements TaskRepository {
     try {
       final localTasks = taskBox.values.toList();
       final snapshot = await firestore.collection('tasks').get();
-      final remoteTasks = snapshot.docs.map((doc) => TodoTaskDto.fromJson(doc.data())).toList();
+      final remoteTasks =
+          snapshot.docs.map((doc) => TodoTaskDto.fromJson(doc.data())).toList();
 
       for (var remoteTask in remoteTasks) {
         if (!taskBox.containsKey(remoteTask.id)) {
@@ -64,7 +62,10 @@ class TaskRepositoryImpl implements TaskRepository {
 
       for (var localTask in localTasks) {
         if (!remoteTasks.any((rt) => rt.id == localTask.id)) {
-          await firestore.collection('tasks').doc(localTask.id).set(localTask.toJson());
+          await firestore
+              .collection('tasks')
+              .doc(localTask.id)
+              .set(localTask.toJson());
         }
       }
     } catch (e) {}
@@ -80,7 +81,8 @@ class TaskRepositoryImpl implements TaskRepository {
       }
       return right(tasks);
     } catch (e) {
-      if (taskBox.isNotEmpty) return right(taskBox.values.map((dto) => dto.toDomain()).toList());
+      if (taskBox.isNotEmpty)
+        return right(taskBox.values.map((dto) => dto.toDomain()).toList());
       return left(const Failure.serverError());
     }
   }
