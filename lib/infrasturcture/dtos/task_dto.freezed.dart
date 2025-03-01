@@ -3,7 +3,7 @@
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
-part of 'task_dto.dart';
+part of 'todo_task_dto.dart';
 
 // **************************************************************************
 // FreezedGenerator
@@ -14,12 +14,12 @@ T _$identity<T>(T value) => value;
 final _privateConstructorUsedError = UnsupportedError(
     'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
-TaskDto _$TaskDtoFromJson(Map<String, dynamic> json) {
-  return _TaskDto.fromJson(json);
+TodoTaskDto _$TodoTaskDtoFromJson(Map<String, dynamic> json) {
+  return _TodoTaskDto.fromJson(json);
 }
 
 /// @nodoc
-mixin _$TaskDto {
+mixin _$TodoTaskDto {
   @HiveField(0)
   String get id => throw _privateConstructorUsedError;
   @HiveField(1)
@@ -33,19 +33,21 @@ mixin _$TaskDto {
   @HiveField(5)
   bool get isCompleted => throw _privateConstructorUsedError;
 
-  /// Serializes this TaskDto to a JSON map.
+  /// Serializes this TodoTaskDto to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
-  /// Create a copy of TaskDto
+  /// Create a copy of TodoTaskDto
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $TaskDtoCopyWith<TaskDto> get copyWith => throw _privateConstructorUsedError;
+  $TodoTaskDtoCopyWith<TodoTaskDto> get copyWith =>
+      throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $TaskDtoCopyWith<$Res> {
-  factory $TaskDtoCopyWith(TaskDto value, $Res Function(TaskDto) then) =
-      _$TaskDtoCopyWithImpl<$Res, TaskDto>;
+abstract class $TodoTaskDtoCopyWith<$Res> {
+  factory $TodoTaskDtoCopyWith(
+          TodoTaskDto value, $Res Function(TodoTaskDto) then) =
+      _$TodoTaskDtoCopyWithImpl<$Res, TodoTaskDto>;
   @useResult
   $Res call(
       {@HiveField(0) String id,
@@ -57,16 +59,16 @@ abstract class $TaskDtoCopyWith<$Res> {
 }
 
 /// @nodoc
-class _$TaskDtoCopyWithImpl<$Res, $Val extends TaskDto>
-    implements $TaskDtoCopyWith<$Res> {
-  _$TaskDtoCopyWithImpl(this._value, this._then);
+class _$TodoTaskDtoCopyWithImpl<$Res, $Val extends TodoTaskDto>
+    implements $TodoTaskDtoCopyWith<$Res> {
+  _$TodoTaskDtoCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of TaskDto
+  /// Create a copy of TodoTaskDto
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -108,10 +110,11 @@ class _$TaskDtoCopyWithImpl<$Res, $Val extends TaskDto>
 }
 
 /// @nodoc
-abstract class _$$TaskDtoImplCopyWith<$Res> implements $TaskDtoCopyWith<$Res> {
-  factory _$$TaskDtoImplCopyWith(
-          _$TaskDtoImpl value, $Res Function(_$TaskDtoImpl) then) =
-      __$$TaskDtoImplCopyWithImpl<$Res>;
+abstract class _$$TodoTaskDtoImplCopyWith<$Res>
+    implements $TodoTaskDtoCopyWith<$Res> {
+  factory _$$TodoTaskDtoImplCopyWith(
+          _$TodoTaskDtoImpl value, $Res Function(_$TodoTaskDtoImpl) then) =
+      __$$TodoTaskDtoImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
@@ -124,14 +127,14 @@ abstract class _$$TaskDtoImplCopyWith<$Res> implements $TaskDtoCopyWith<$Res> {
 }
 
 /// @nodoc
-class __$$TaskDtoImplCopyWithImpl<$Res>
-    extends _$TaskDtoCopyWithImpl<$Res, _$TaskDtoImpl>
-    implements _$$TaskDtoImplCopyWith<$Res> {
-  __$$TaskDtoImplCopyWithImpl(
-      _$TaskDtoImpl _value, $Res Function(_$TaskDtoImpl) _then)
+class __$$TodoTaskDtoImplCopyWithImpl<$Res>
+    extends _$TodoTaskDtoCopyWithImpl<$Res, _$TodoTaskDtoImpl>
+    implements _$$TodoTaskDtoImplCopyWith<$Res> {
+  __$$TodoTaskDtoImplCopyWithImpl(
+      _$TodoTaskDtoImpl _value, $Res Function(_$TodoTaskDtoImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of TaskDto
+  /// Create a copy of TodoTaskDto
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -143,7 +146,7 @@ class __$$TaskDtoImplCopyWithImpl<$Res>
     Object? priority = null,
     Object? isCompleted = null,
   }) {
-    return _then(_$TaskDtoImpl(
+    return _then(_$TodoTaskDtoImpl(
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
@@ -175,8 +178,8 @@ class __$$TaskDtoImplCopyWithImpl<$Res>
 /// @nodoc
 
 @JsonSerializable(explicitToJson: true)
-class _$TaskDtoImpl implements _TaskDto {
-  const _$TaskDtoImpl(
+class _$TodoTaskDtoImpl implements _TodoTaskDto {
+  const _$TodoTaskDtoImpl(
       {@HiveField(0) required this.id,
       @HiveField(1) required this.title,
       @HiveField(2) required this.description,
@@ -184,8 +187,8 @@ class _$TaskDtoImpl implements _TaskDto {
       @HiveField(4) required this.priority,
       @HiveField(5) required this.isCompleted});
 
-  factory _$TaskDtoImpl.fromJson(Map<String, dynamic> json) =>
-      _$$TaskDtoImplFromJson(json);
+  factory _$TodoTaskDtoImpl.fromJson(Map<String, dynamic> json) =>
+      _$$TodoTaskDtoImplFromJson(json);
 
   @override
   @HiveField(0)
@@ -208,14 +211,14 @@ class _$TaskDtoImpl implements _TaskDto {
 
   @override
   String toString() {
-    return 'TaskDto(id: $id, title: $title, description: $description, dueDate: $dueDate, priority: $priority, isCompleted: $isCompleted)';
+    return 'TodoTaskDto(id: $id, title: $title, description: $description, dueDate: $dueDate, priority: $priority, isCompleted: $isCompleted)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$TaskDtoImpl &&
+            other is _$TodoTaskDtoImpl &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.title, title) || other.title == title) &&
             (identical(other.description, description) ||
@@ -232,32 +235,33 @@ class _$TaskDtoImpl implements _TaskDto {
   int get hashCode => Object.hash(
       runtimeType, id, title, description, dueDate, priority, isCompleted);
 
-  /// Create a copy of TaskDto
+  /// Create a copy of TodoTaskDto
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$TaskDtoImplCopyWith<_$TaskDtoImpl> get copyWith =>
-      __$$TaskDtoImplCopyWithImpl<_$TaskDtoImpl>(this, _$identity);
+  _$$TodoTaskDtoImplCopyWith<_$TodoTaskDtoImpl> get copyWith =>
+      __$$TodoTaskDtoImplCopyWithImpl<_$TodoTaskDtoImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$TaskDtoImplToJson(
+    return _$$TodoTaskDtoImplToJson(
       this,
     );
   }
 }
 
-abstract class _TaskDto implements TaskDto {
-  const factory _TaskDto(
+abstract class _TodoTaskDto implements TodoTaskDto {
+  const factory _TodoTaskDto(
       {@HiveField(0) required final String id,
       @HiveField(1) required final String title,
       @HiveField(2) required final String description,
       @HiveField(3) required final DateTime dueDate,
       @HiveField(4) required final String priority,
-      @HiveField(5) required final bool isCompleted}) = _$TaskDtoImpl;
+      @HiveField(5) required final bool isCompleted}) = _$TodoTaskDtoImpl;
 
-  factory _TaskDto.fromJson(Map<String, dynamic> json) = _$TaskDtoImpl.fromJson;
+  factory _TodoTaskDto.fromJson(Map<String, dynamic> json) =
+      _$TodoTaskDtoImpl.fromJson;
 
   @override
   @HiveField(0)
@@ -278,10 +282,10 @@ abstract class _TaskDto implements TaskDto {
   @HiveField(5)
   bool get isCompleted;
 
-  /// Create a copy of TaskDto
+  /// Create a copy of TodoTaskDto
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$TaskDtoImplCopyWith<_$TaskDtoImpl> get copyWith =>
+  _$$TodoTaskDtoImplCopyWith<_$TodoTaskDtoImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

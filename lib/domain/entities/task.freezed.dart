@@ -3,7 +3,7 @@
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
-part of 'task.dart';
+part of 'todo_task.dart';
 
 // **************************************************************************
 // FreezedGenerator
@@ -15,7 +15,7 @@ final _privateConstructorUsedError = UnsupportedError(
     'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 /// @nodoc
-mixin _$Task {
+mixin _$TodoTask {
   String get id => throw _privateConstructorUsedError;
   String get title => throw _privateConstructorUsedError;
   String get description => throw _privateConstructorUsedError;
@@ -23,16 +23,17 @@ mixin _$Task {
   Priority get priority => throw _privateConstructorUsedError;
   bool get isCompleted => throw _privateConstructorUsedError;
 
-  /// Create a copy of Task
+  /// Create a copy of TodoTask
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $TaskCopyWith<Task> get copyWith => throw _privateConstructorUsedError;
+  $TodoTaskCopyWith<TodoTask> get copyWith =>
+      throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $TaskCopyWith<$Res> {
-  factory $TaskCopyWith(Task value, $Res Function(Task) then) =
-      _$TaskCopyWithImpl<$Res, Task>;
+abstract class $TodoTaskCopyWith<$Res> {
+  factory $TodoTaskCopyWith(TodoTask value, $Res Function(TodoTask) then) =
+      _$TodoTaskCopyWithImpl<$Res, TodoTask>;
   @useResult
   $Res call(
       {String id,
@@ -44,16 +45,16 @@ abstract class $TaskCopyWith<$Res> {
 }
 
 /// @nodoc
-class _$TaskCopyWithImpl<$Res, $Val extends Task>
-    implements $TaskCopyWith<$Res> {
-  _$TaskCopyWithImpl(this._value, this._then);
+class _$TodoTaskCopyWithImpl<$Res, $Val extends TodoTask>
+    implements $TodoTaskCopyWith<$Res> {
+  _$TodoTaskCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of Task
+  /// Create a copy of TodoTask
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -95,10 +96,11 @@ class _$TaskCopyWithImpl<$Res, $Val extends Task>
 }
 
 /// @nodoc
-abstract class _$$TaskImplCopyWith<$Res> implements $TaskCopyWith<$Res> {
-  factory _$$TaskImplCopyWith(
-          _$TaskImpl value, $Res Function(_$TaskImpl) then) =
-      __$$TaskImplCopyWithImpl<$Res>;
+abstract class _$$TodoTaskImplCopyWith<$Res>
+    implements $TodoTaskCopyWith<$Res> {
+  factory _$$TodoTaskImplCopyWith(
+          _$TodoTaskImpl value, $Res Function(_$TodoTaskImpl) then) =
+      __$$TodoTaskImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
@@ -111,13 +113,14 @@ abstract class _$$TaskImplCopyWith<$Res> implements $TaskCopyWith<$Res> {
 }
 
 /// @nodoc
-class __$$TaskImplCopyWithImpl<$Res>
-    extends _$TaskCopyWithImpl<$Res, _$TaskImpl>
-    implements _$$TaskImplCopyWith<$Res> {
-  __$$TaskImplCopyWithImpl(_$TaskImpl _value, $Res Function(_$TaskImpl) _then)
+class __$$TodoTaskImplCopyWithImpl<$Res>
+    extends _$TodoTaskCopyWithImpl<$Res, _$TodoTaskImpl>
+    implements _$$TodoTaskImplCopyWith<$Res> {
+  __$$TodoTaskImplCopyWithImpl(
+      _$TodoTaskImpl _value, $Res Function(_$TodoTaskImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of Task
+  /// Create a copy of TodoTask
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -129,7 +132,7 @@ class __$$TaskImplCopyWithImpl<$Res>
     Object? priority = null,
     Object? isCompleted = null,
   }) {
-    return _then(_$TaskImpl(
+    return _then(_$TodoTaskImpl(
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
@@ -160,8 +163,8 @@ class __$$TaskImplCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$TaskImpl implements _Task {
-  const _$TaskImpl(
+class _$TodoTaskImpl implements _TodoTask {
+  const _$TodoTaskImpl(
       {required this.id,
       required this.title,
       required this.description,
@@ -184,14 +187,14 @@ class _$TaskImpl implements _Task {
 
   @override
   String toString() {
-    return 'Task(id: $id, title: $title, description: $description, dueDate: $dueDate, priority: $priority, isCompleted: $isCompleted)';
+    return 'TodoTask(id: $id, title: $title, description: $description, dueDate: $dueDate, priority: $priority, isCompleted: $isCompleted)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$TaskImpl &&
+            other is _$TodoTaskImpl &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.title, title) || other.title == title) &&
             (identical(other.description, description) ||
@@ -207,23 +210,23 @@ class _$TaskImpl implements _Task {
   int get hashCode => Object.hash(
       runtimeType, id, title, description, dueDate, priority, isCompleted);
 
-  /// Create a copy of Task
+  /// Create a copy of TodoTask
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$TaskImplCopyWith<_$TaskImpl> get copyWith =>
-      __$$TaskImplCopyWithImpl<_$TaskImpl>(this, _$identity);
+  _$$TodoTaskImplCopyWith<_$TodoTaskImpl> get copyWith =>
+      __$$TodoTaskImplCopyWithImpl<_$TodoTaskImpl>(this, _$identity);
 }
 
-abstract class _Task implements Task {
-  const factory _Task(
+abstract class _TodoTask implements TodoTask {
+  const factory _TodoTask(
       {required final String id,
       required final String title,
       required final String description,
       required final DateTime dueDate,
       required final Priority priority,
-      required final bool isCompleted}) = _$TaskImpl;
+      required final bool isCompleted}) = _$TodoTaskImpl;
 
   @override
   String get id;
@@ -238,10 +241,10 @@ abstract class _Task implements Task {
   @override
   bool get isCompleted;
 
-  /// Create a copy of Task
+  /// Create a copy of TodoTask
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$TaskImplCopyWith<_$TaskImpl> get copyWith =>
+  _$$TodoTaskImplCopyWith<_$TodoTaskImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

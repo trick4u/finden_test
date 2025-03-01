@@ -1,22 +1,22 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'task_dto.dart';
+part of 'todo_task_dto.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator
 // **************************************************************************
 
-class TaskDtoAdapter extends TypeAdapter<TaskDto> {
+class TodoTaskDtoAdapter extends TypeAdapter<TodoTaskDto> {
   @override
   final int typeId = 0;
 
   @override
-  TaskDto read(BinaryReader reader) {
+  TodoTaskDto read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return TaskDto(
+    return TodoTaskDto(
       id: fields[0] as String,
       title: fields[1] as String,
       description: fields[2] as String,
@@ -27,7 +27,7 @@ class TaskDtoAdapter extends TypeAdapter<TaskDto> {
   }
 
   @override
-  void write(BinaryWriter writer, TaskDto obj) {
+  void write(BinaryWriter writer, TodoTaskDto obj) {
     writer
       ..writeByte(6)
       ..writeByte(0)
@@ -50,7 +50,7 @@ class TaskDtoAdapter extends TypeAdapter<TaskDto> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is TaskDtoAdapter &&
+      other is TodoTaskDtoAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }
@@ -59,8 +59,8 @@ class TaskDtoAdapter extends TypeAdapter<TaskDto> {
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$TaskDtoImpl _$$TaskDtoImplFromJson(Map<String, dynamic> json) =>
-    _$TaskDtoImpl(
+_$TodoTaskDtoImpl _$$TodoTaskDtoImplFromJson(Map<String, dynamic> json) =>
+    _$TodoTaskDtoImpl(
       id: json['id'] as String,
       title: json['title'] as String,
       description: json['description'] as String,
@@ -69,7 +69,7 @@ _$TaskDtoImpl _$$TaskDtoImplFromJson(Map<String, dynamic> json) =>
       isCompleted: json['isCompleted'] as bool,
     );
 
-Map<String, dynamic> _$$TaskDtoImplToJson(_$TaskDtoImpl instance) =>
+Map<String, dynamic> _$$TodoTaskDtoImplToJson(_$TodoTaskDtoImpl instance) =>
     <String, dynamic>{
       'id': instance.id,
       'title': instance.title,

@@ -2,28 +2,28 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hive/hive.dart';
 import 'package:json_annotation/json_annotation.dart';
-import 'package:finden_test/domain/entities/task.dart';
+import 'package:finden_test/domain/entities/todo_task.dart';
 import 'package:finden_test/domain/value_objects/priority.dart';
 
 part 'task_dto.freezed.dart';
-part 'task_dto.g.dart'; // Add this for json_serializable
+part 'task_dto.g.dart'; 
 
 @HiveType(typeId: 0)
 @freezed
-class TaskDto with _$TaskDto {
+class TodoTaskDto with _$TodoTaskDto {
   @JsonSerializable(explicitToJson: true)
-  const factory TaskDto({
+  const factory TodoTaskDto({
     @HiveField(0) required String id,
     @HiveField(1) required String title,
     @HiveField(2) required String description,
     @HiveField(3) required DateTime dueDate,
     @HiveField(4) required String priority,
     @HiveField(5) required bool isCompleted,
-  }) = _TaskDto;
+  }) = _TodoTaskDto;
 
-  factory TaskDto.fromJson(Map<String, dynamic> json) => _$TaskDtoFromJson(json);
+  factory TodoTaskDto.fromJson(Map<String, dynamic> json) => _$TodoTaskDtoFromJson(json);
 
-  factory TaskDto.fromDomain(Task task) => TaskDto(
+  factory TodoTaskDto.fromDomain(TodoTask task) => TodoTaskDto(
         id: task.id,
         title: task.title,
         description: task.description,
@@ -33,8 +33,8 @@ class TaskDto with _$TaskDto {
       );
 }
 
-extension TaskDtoX on TaskDto {
-  Task toDomain() => Task(
+extension TodoTaskDtoX on TodoTaskDto {
+  TodoTask toDomain() => TodoTask(
         id: id,
         title: title,
         description: description,
