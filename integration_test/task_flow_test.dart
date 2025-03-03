@@ -1,7 +1,5 @@
-// task_flow_test.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
 import 'package:finden_test/main.dart' as app;
 import 'package:integration_test/integration_test.dart';
 
@@ -27,7 +25,13 @@ void main() {
         print('No user logged in');
       }
 
-      // Sign up
+      // Add a delay to ensure the UI is fully built.
+      await tester.pumpAndSettle();
+
+      // Verify the "Need an account? Sign Up" widget is present.
+      expect(find.text('Need an account? Sign Up'), findsOneWidget);
+
+      // Tap the "Need an account? Sign Up" button.
       await tester.tap(find.text('Need an account? Sign Up'));
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField).at(0), testEmail);

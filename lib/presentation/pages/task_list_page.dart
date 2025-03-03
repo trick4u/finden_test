@@ -128,8 +128,15 @@ class _TaskListPageState extends ConsumerState<TaskListPage> {
                       controller: _searchController,
                       decoration: InputDecoration(
                         labelText: 'Search Tasks',
+                        filled: true,
+                        fillColor: Colors.grey[200],
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12.0),
+                          borderSide: BorderSide.none,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16.0,
+                          vertical: 14.0,
                         ),
                         prefixIcon: const Icon(Icons.search),
                       ),
@@ -188,8 +195,8 @@ class _TaskListPageState extends ConsumerState<TaskListPage> {
                         ? GridView.builder(
                             gridDelegate:
                                 const SliverGridDelegateWithMaxCrossAxisExtent(
-                              maxCrossAxisExtent: 300, 
-                              childAspectRatio: 3 / 2, 
+                              maxCrossAxisExtent: 300,
+                              childAspectRatio: 3 / 2,
                               crossAxisSpacing: 8.0,
                               mainAxisSpacing: 8.0,
                             ),

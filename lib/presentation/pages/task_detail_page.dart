@@ -1,6 +1,3 @@
-
-
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -27,7 +24,8 @@ class _TaskDetailPageState extends ConsumerState<TaskDetailPage> {
   void initState() {
     super.initState();
     _titleController = TextEditingController(text: widget.task?.title ?? '');
-    _descController = TextEditingController(text: widget.task?.description ?? '');
+    _descController =
+        TextEditingController(text: widget.task?.description ?? '');
     _dueDate = widget.task?.dueDate ?? DateTime.now();
     _priority = widget.task?.priority ?? Priority.medium;
   }
@@ -61,26 +59,55 @@ class _TaskDetailPageState extends ConsumerState<TaskDetailPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.task == null ? 'New Task' : 'Edit Task')),
+      appBar:
+          AppBar(title: Text(widget.task == null ? 'New Task' : 'Edit Task')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
             TextField(
               controller: _titleController,
-              decoration: const InputDecoration(labelText: 'Title'),
+              decoration: InputDecoration(
+                labelText: 'Title',
+                filled: true,
+                fillColor: Colors.grey[200],
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12.0),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 14.0,
+                ),
+              ),
             ),
+            SizedBox(height: 16.0),
             TextField(
               controller: _descController,
-              decoration: const InputDecoration(labelText: 'Description'),
+              decoration: InputDecoration(
+                labelText: 'Description',
+                filled: true,
+                fillColor: Colors.grey[200],
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12.0),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 14.0,
+                ),
+              ),
             ),
             TextButton(
               onPressed: () => _selectDateTime(context),
-              child: Text('Due: ${_dueDate.toString().substring(0, 16)}'), // Show date and time
+              child: Text(
+                  'Due: ${_dueDate.toString().substring(0, 16)}'), // Show date and time
             ),
             DropdownButton<Priority>(
               value: _priority,
-              items: Priority.values.map((p) => DropdownMenuItem(value: p, child: Text(p.name))).toList(),
+              items: Priority.values
+                  .map((p) => DropdownMenuItem(value: p, child: Text(p.name)))
+                  .toList(),
               onChanged: (value) => setState(() => _priority = value!),
             ),
             ElevatedButton(
@@ -94,7 +121,9 @@ class _TaskDetailPageState extends ConsumerState<TaskDetailPage> {
                   isCompleted: widget.task?.isCompleted ?? false,
                 );
                 final notifier = ref.read(taskNotifierProvider.notifier);
-                widget.task == null ? notifier.createTask(task) : notifier.updateTask(task);
+                widget.task == null
+                    ? notifier.createTask(task)
+                    : notifier.updateTask(task);
                 Navigator.pop(context);
               },
               child: const Text('Save'),
